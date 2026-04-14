@@ -69,6 +69,26 @@ git worktree add -b issue-<NUMBER>-<short-slug> .claude/worktrees/issue-<NUMBER>
 
 ---
 
+## Updating the Changelog
+
+Before opening a PR, add an entry to `CHANGELOG.md` under `## [Unreleased]` (create the section if it doesn't exist):
+
+```markdown
+## [Unreleased]
+
+### Added / Changed / Fixed
+- `[propagate]` Brief description of what changed and why
+```
+
+Use the appropriate propagation tag:
+- `[propagate]` — change is useful to all existing instances
+- `[template-only]` — affects scaffold or template infrastructure only
+- `[manual]` — requires human judgment before applying to instances
+
+See `CHANGELOG.md` for the format and existing entries as reference.
+
+---
+
 ## Handing Off for Review
 
 When all acceptance criteria are met:
