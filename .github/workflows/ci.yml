@@ -34,10 +34,11 @@ jobs:
       - name: Unit tests
         run: pnpm exec vitest run
 
-      - name: Install Playwright browsers
-        run: pnpm test:e2e:install
-
-      - name: E2E tests
-        run: pnpm test:e2e
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # E2E tests disabled pending lockfile fix — see issue #8
+      # Requires: pnpm-lock.yaml committed from pnpm v9, DATABASE_URL secret configured
+      # - name: Install Playwright browsers
+      #   run: pnpm test:e2e:install
+      # - name: E2E tests
+      #   run: pnpm test:e2e
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
