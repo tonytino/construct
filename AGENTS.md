@@ -7,13 +7,15 @@ Source of truth for all agents in this repo. Read this file fully before making 
 ## Before You Start Any Task
 
 1. Read this file fully.
-2. Check `docs/agents/` for a sub-doc relevant to your task and read it fully before proceeding.
-3. If no relevant sub-doc exists yet, follow the **Documentation Philosophy** below before creating one.
+2. **If `TEMPLATE.md` exists in this repo**, read it before doing anything else — it means you are modifying the construct template itself, not a project built from it. The design principles there govern every decision.
+3. Check `docs/agents/` for a sub-doc relevant to your task and read it fully before proceeding.
+4. If no relevant sub-doc exists yet, follow the **Documentation Philosophy** below before creating one.
 
 ### Sub-Doc Index
 
 | Task involves...             | Read this first                  |
 | ---------------------------- | -------------------------------- |
+| Finding and claiming work    | `docs/agents/tasks.md`           |
 | Routes, pages, navigation    | `docs/agents/routing.md`         |
 | API endpoints, server logic  | `docs/agents/api.md`             |
 | Database, schema, migrations | `docs/agents/database.md`        |
@@ -71,6 +73,27 @@ These apply everywhere, always, with no exceptions.
 - **No skipping tests** for code you add.
 - **pnpm only.** Never use npm or yarn.
 - **Run `pnpm check` before every commit.**
+
+---
+
+## Finding Work
+
+Tasks are tracked as GitHub Issues. The full workflow is in `docs/agents/tasks.md`.
+
+Quick reference:
+
+```bash
+# Discover claimable tasks
+gh issue list --label "status:ready,safe:agent" --assignee "" --state open
+
+# Claim a task (replace <NUMBER>)
+gh issue edit <NUMBER> --add-assignee "@me"
+gh issue edit <NUMBER> --remove-label "status:ready" --add-label "status:in-progress"
+```
+
+Branch naming: `issue-<NUMBER>-<short-slug>`
+
+After work is done, open a PR with `Closes #<NUMBER>` and relabel to `status:needs-review`.
 
 ---
 

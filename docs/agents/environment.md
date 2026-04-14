@@ -33,3 +33,30 @@ console.log(env.YOUR_NEW_VAR);
 - Never commit `.env`. It is gitignored.
 - Always keep `.env.example` in sync with `app/env.ts`.
 - In CI, secrets are injected via GitHub Actions secrets — see `.github/workflows/ci.yml`.
+
+---
+
+## Provisioning DATABASE_URL
+
+This project uses [Neon](https://neon.tech) — a serverless Postgres provider with a free tier.
+
+### Local development
+
+1. Go to [neon.tech](https://neon.tech) and sign in (GitHub login works).
+2. Click **New Project** → choose a region close to you → **Create Project**.
+3. On the project dashboard, click **Connection Details**.
+4. Select the **Pooled connection** tab and copy the connection string.
+5. Create `.env.local` at the project root and paste it in:
+
+```bash
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+```
+
+6. Run `pnpm db:migrate` to apply the initial schema.
+
+### CI (GitHub Actions)
+
+1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**.
+2. Click **New repository secret**.
+3. Name: `DATABASE_URL`, Value: the same pooled connection string from above.
+4. The CI workflow at `.github/workflows/ci.yml` injects it automatically for E2E tests.

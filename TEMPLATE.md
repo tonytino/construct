@@ -41,3 +41,11 @@ Do not add these to the template without strong justification:
 3. If you add a new convention that doesn't fit an existing sub-doc, create one following the naming rules in `AGENTS.md`.
 4. If you change the stack table or hard rules, update `AGENTS.md`.
 5. Keep this file current if the purpose, principles, or intentional absences change.
+
+### Task Management
+
+`docs/agents/tasks.md` defines how agents discover, claim, and execute work via GitHub Issues. The label taxonomy it describes is created by `scripts/scaffold.mjs` during project setup.
+
+**If you change the label taxonomy** (add, rename, or remove labels), you must update both:
+- `scripts/labels.mjs` — the canonical label definitions used by scaffold and tests
+- `docs/agents/tasks.md` — the label reference table and workflow description
