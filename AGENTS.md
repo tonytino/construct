@@ -14,6 +14,7 @@ Source of truth for all agents in this repo. Read this file fully before making 
 
 | Task involves...             | Read this first                  |
 | ---------------------------- | -------------------------------- |
+| Finding and claiming work    | `docs/agents/tasks.md`           |
 | Routes, pages, navigation    | `docs/agents/routing.md`         |
 | API endpoints, server logic  | `docs/agents/api.md`             |
 | Database, schema, migrations | `docs/agents/database.md`        |
@@ -71,6 +72,27 @@ These apply everywhere, always, with no exceptions.
 - **No skipping tests** for code you add.
 - **pnpm only.** Never use npm or yarn.
 - **Run `pnpm check` before every commit.**
+
+---
+
+## Finding Work
+
+Tasks are tracked as GitHub Issues. The full workflow is in `docs/agents/tasks.md`.
+
+Quick reference:
+
+```bash
+# Discover claimable tasks
+gh issue list --label "status:ready,safe:agent" --assignee "" --state open
+
+# Claim a task (replace <NUMBER>)
+gh issue edit <NUMBER> --add-assignee "@me"
+gh issue edit <NUMBER> --remove-label "status:ready" --add-label "status:in-progress"
+```
+
+Branch naming: `issue-<NUMBER>-<short-slug>`
+
+After work is done, open a PR with `Closes #<NUMBER>` and relabel to `status:needs-review`.
 
 ---
 

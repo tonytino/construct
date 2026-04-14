@@ -9,10 +9,12 @@
  * Usage: pnpm scaffold
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as readline from "readline/promises";
-import { fileURLToPath } from "url";
+import { execSync } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as readline from "node:readline/promises";
+import { fileURLToPath } from "node:url";
+import { LABELS } from "./labels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -27,7 +29,7 @@ function readJSON(filePath) {
 }
 
 function writeJSON(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`);
 }
 
 function writeFile(filePath, content) {
@@ -39,7 +41,10 @@ function removeFile(filePath) {
 }
 
 function slugify(name) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
 async function prompt(question, fallback) {
@@ -76,7 +81,7 @@ const constructVersion = pkg.version;
 pkg.name = projectSlug;
 pkg.description = projectDescription;
 pkg.version = "0.1.0";
-delete pkg.scripts.scaffold;
+pkg.scripts.scaffold = undefined;
 writeJSON(path.join(ROOT, "package.json"), pkg);
 console.log("✓ package.json updated");
 
@@ -133,7 +138,7 @@ const constructMeta = {
   projectSlug,
   scaffoldedAt: new Date().toISOString(),
 };
-writeFile(path.join(ROOT, ".construct"), JSON.stringify(constructMeta, null, 2) + "\n");
+writeFile(path.join(ROOT, ".construct"), `${JSON.stringify(constructMeta, null, 2)}\n`);
 console.log("✓ .construct metadata written");
 
 // 6. Remove construct-specific files
@@ -158,16 +163,62 @@ export default app;
 writeFile(path.join(ROOT, "app/server/index.ts"), serverIndex);
 console.log("✓ Example routes cleaned up");
 
-// 8. Remove this script
+// 8. Set up GitHub issue labels (optional, requires gh auth login)
+console.log("\n📋 GitHub Label Setup\n");
+console.log("This will create the agentic task management labels in your GitHub repo.");
+console.log("Requires: gh CLI installed and authenticated (gh auth login)\n");
+console.log("Labels to create:");
+for (const label of LABELS) {
+  console.log(`  • ${label.name}`);
+}
+
+const rl2 = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+const setupLabels = await rl2.question("\nSet up GitHub labels now? (yes/no): ");
+rl2.close();
+
+if (setupLabels.trim() === "yes") {
+  console.log("\nCreating labels...\n");
+  let labelErrors = 0;
+  for (const label of LABELS) {
+    try {
+      execSync(
+        `gh label create "${label.name}" --color "${label.color}" --description "${label.description}" --force`,
+        { stdio: "pipe" }
+      );
+      console.log(`  ✓ ${label.name}`);
+    } catch {
+      console.log(`  ✗ ${label.name} (skipped — run manually if needed)`);
+      labelErrors++;
+    }
+  }
+  if (labelErrors > 0) {
+    console.log(
+      `\n  ${labelErrors} label(s) failed. Run: gh label create "<name>" --color "<hex>" --description "<desc>"`
+    );
+  } else {
+    console.log("\n✓ Labels created");
+  }
+} else {
+  console.log("\nSkipped. To set up labels later, run:");
+  console.log("  node scripts/labels.mjs  (or re-run and choose yes)\n");
+}
+
+// 9. Remove scaffold scripts
+removeFile(path.join(ROOT, "scripts/labels.mjs"));
 removeFile(path.join(ROOT, "scripts/scaffold.mjs"));
-try { fs.rmdirSync(path.join(ROOT, "scripts")); } catch {}
-console.log("✓ Scaffold script removed");
+try {
+  fs.rmdirSync(path.join(ROOT, "scripts"));
+} catch {}
+console.log("✓ Scaffold scripts removed");
 
 console.log(`
 ✅ Done! Your project "${projectName}" is ready.
 
 Next steps:
-  1. cp .env.example .env  (and fill in DATABASE_URL)
+  1. cp .env.example .env.local  (and fill in DATABASE_URL — see docs/agents/environment.md)
   2. pnpm install
   3. pnpm dev
 `);
