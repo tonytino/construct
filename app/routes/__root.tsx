@@ -1,10 +1,4 @@
-import {
-  HeadContent,
-  Link,
-  Outlet,
-  Scripts,
-  createRootRoute,
-} from "@tanstack/react-router";
+import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
@@ -55,10 +49,7 @@ function RootErrorBoundary({ error, reset }: ErrorComponentProps) {
         {error instanceof Error ? error.message : "An unexpected error occurred."}
       </p>
       <div className="flex gap-4">
-        <button
-          onClick={reset}
-          className="text-sm underline underline-offset-4"
-        >
+        <button type="button" onClick={reset} className="text-sm underline underline-offset-4">
           Try again
         </button>
         <Link to="/" className="text-sm underline underline-offset-4">
