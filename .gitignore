@@ -13,3 +13,6 @@ dist/
 
 # Generated files
 app/routeTree.gen.ts
+
+# Claude Code
+.claude/
