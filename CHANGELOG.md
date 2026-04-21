@@ -17,26 +17,55 @@ Each entry is tagged to guide agents propagating changes to construct instances:
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-04-21
+
 ### Added
 
 - `[propagate]` GitHub Issues-based agentic task management system with label taxonomy (`status:`, `type:`, `size:`, `safe:` groups)
 - `[propagate]` `docs/agents/tasks.md` — agent workflow guide for discovering, claiming, and handing off work
 - `[template-only]` `.github/ISSUE_TEMPLATE/agent-task.yml` and `bug-report.yml` for structured issue creation
 - `[template-only]` `.github/workflows/ci.yml` — CI pipeline (lint, typecheck, unit tests, E2E) on push and PR
+- `[template-only]` `.github/workflows/validate-template.yml` — scaffold-and-verify pipeline for every PR
+- `[template-only]` `.github/workflows/release-check.yml` — enforces CHANGELOG entry and migration guide on version bumps
 - `[template-only]` `scripts/labels.mjs` — exportable label definitions; scaffold creates them in GitHub automatically
 - `[propagate]` `.env.example` with `DATABASE_URL` and Neon provisioning guide in `docs/agents/environment.md`
 - `[template-only]` Unit tests for label definitions, issue templates, and CI workflow structure
+- `[propagate]` Error boundary + 404 page in `app/routes/__root.tsx` via `notFoundComponent` and `errorComponent`
+- `[propagate]` Example server function in `app/routes/index.tsx` demonstrating `createServerFn`
+- `[propagate]` Example unit test (`app/utils/format.ts` + test) and component test (`app/components/Greeting.tsx` + test)
+- `[propagate]` `postinstall: "tsr generate"` in `package.json` and `@tanstack/router-cli` dev dependency
+- `[propagate]` `tsr.config.json` pointing route generator at `app/routes/` and `app/routeTree.gen.ts`
+- `[propagate]` `pnpm.overrides` block pinning 17 `@tanstack/*` packages to `~1.114.3` to prevent v1.167 drift
+- `[propagate]` `.gitignore` with `node_modules`, build outputs, env files, `routeTree.gen.ts`, `app.config.timestamp_*`, `.claude/`
+- `[propagate]` `"preflight"` script — single-command validation (lint + typecheck + tests)
+- `[propagate]` `"prepare": "lefthook install"` and `lefthook` dev dependency for pre-commit hooks
+- `[propagate]` `lefthook.yml` with pre-commit hook running `biome check --staged` on staged files
+- `[propagate]` `"packageManager": "pnpm@9.15.0"` for deterministic pnpm version across machines and CI
+- `[propagate]` `.github/pull_request_template.md` with Summary / Issues / Test plan / Propagation checklist
+- `[propagate]` `docs/agents/dependencies.md` — dependency governance policy (range strategy, override pattern, adding new packages)
+- `[propagate]` `docs/agents/releases.md` — release convention for version bumps (CHANGELOG + migration guide + propagation)
+- `[propagate]` `docs/agents/tooling.md` — when to use `pnpm check` vs `pnpm preflight` vs Lefthook
+- `[template-only]` `docs/decisions/` — Architecture Decision Records framework with 5 initial ADRs (TanStack Start, dual-layer API, Neon, Biome, file-based routing)
+- `[template-only]` `docs/migrations/` — versioned migration guide framework with `template.md` and `v0.2.md`
 
 ### Changed
 
-- `[propagate]` `AGENTS.md` — "Before You Start" now references `TEMPLATE.md` when present; added "Finding Work" section
+- `[propagate]` Template version bumped to `0.2.0`; `.construct` records this on scaffold and propagation
+- `[propagate]` `AGENTS.md` — "Before You Start" now references `TEMPLATE.md` when present; added "Finding Work", "Template Version Tracking" sections; Sub-Doc Index now points to `docs/decisions/`, `docs/migrations/`, `docs/agents/dependencies.md`, `docs/agents/releases.md`, `docs/agents/tooling.md`; `pnpm preflight` promoted to hard rule
+- `[propagate]` `docs/agents/api.md` — expanded with decision table and server function examples
+- `[propagate]` `docs/agents/propagation.md` — documents `.construct` version tracking, migration guide precedence, what propagates vs what stays template-only
+- `[propagate]` `docs/agents/tasks.md` — adds `pnpm preflight` step and pre-commit hook section
+- `[propagate]` `biome.json` — `files.ignore` now includes `app.config.timestamp_*` and `.claude/`
+- `[propagate]` `.github/workflows/ci.yml` — `pnpm install --frozen-lockfile`, pnpm cache via `setup-node`, E2E gated on `CI_E2E_DATABASE_URL` secret
 - `[template-only]` `TEMPLATE.md` — added maintainer callout for keeping `labels.mjs` and `tasks.md` in sync
-- `[propagate]` `docs/agents/tasks.md` — added changelog update requirement to the handoff workflow
-- `[template-only]` `scripts/scaffold.mjs` — label setup step with human confirmation prompt added
+- `[template-only]` `scripts/scaffold.mjs` — label setup step with human confirmation prompt added; substitutes project name into `AGENTS.md`
 
 ### Fixed
 
 - `[template-only]` `drizzle.config.ts` — removed non-null assertion on `DATABASE_URL`; now throws a clear error if unset
+- `[propagate]` TanStack v1.167 incompatibility (dropped vinxi support) — pinned to `~1.114.3` via `pnpm.overrides`
 
 ---
 

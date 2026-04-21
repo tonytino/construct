@@ -33,7 +33,7 @@ The fix is the `pnpm.overrides` block in `package.json`, which pins **every** `@
 
 1. Change the version in **both** the top-level `dependencies`/`devDependencies` **and** every entry in `pnpm.overrides`.
 2. Run `pnpm install` and verify the lockfile shows a single resolved version for all `@tanstack/*` packages.
-3. Run the full preflight (`pnpm check && pnpm typecheck && pnpm test && pnpm build`).
+3. Run `pnpm preflight && pnpm build`.
 
 Never update just one TanStack package in isolation.
 
@@ -46,12 +46,14 @@ pnpm install
 # 2. Inspect lockfile for unexpected version drift
 git diff pnpm-lock.yaml | grep "resolution:"
 
-# 3. Run preflight
-pnpm check && pnpm typecheck && pnpm test && pnpm build
+# 3. Validate
+pnpm preflight && pnpm build
 
 # 4. If E2E tests exist for the affected area
 pnpm test:e2e
 ```
+
+`pnpm preflight` is the single source of truth for validation — do not hand-roll a chain of `biome check && tsc && vitest` here, since the preflight script can evolve. If a new validation step is added, it is added to `preflight`, not documented here.
 
 Review the `pnpm-lock.yaml` diff before committing. Large, unexplained changes in transitive dependencies are a red flag — investigate before pushing.
 

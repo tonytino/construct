@@ -13,5 +13,14 @@ Resolves #
 
 - [ ]
 
+## Propagation
+<!-- Fill this out if this PR changes anything an existing instance would care about. -->
+
+- [ ] This PR does **not** bump `package.json` `version`. (If it does, the three items below are required — see `docs/agents/releases.md`.)
+- [ ] **OR** this PR bumps the version and includes:
+  - [ ] A new `## [X.Y.Z]` section in `CHANGELOG.md` with every bullet tagged `[propagate]`, `[template-only]`, or `[manual]`
+  - [ ] A new migration guide at `docs/migrations/vX.Y.md`
+  - [ ] The migration guide covers every `[propagate]` CHANGELOG entry
+
 ## Notes for reviewer
 <!-- Optional: anything the reviewer should know — tradeoffs, open questions, areas of risk. -->
