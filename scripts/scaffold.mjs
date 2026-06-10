@@ -250,13 +250,20 @@ if (setupLabels === "yes") {
   console.log("  node scripts/labels.mjs  (or re-run and choose yes)\n");
 }
 
-// 10. Remove scaffold scripts
+// 10. Remove scaffold scripts and the template-infrastructure tests that
+// cover them (these test construct itself, not the scaffolded app; labels.test
+// also imports scripts/labels.mjs, which is removed above).
 removeFile(path.join(ROOT, "scripts/labels.mjs"));
 removeFile(path.join(ROOT, "scripts/scaffold.mjs"));
 try {
   fs.rmdirSync(path.join(ROOT, "scripts"));
 } catch {}
-console.log("✓ Scaffold scripts removed");
+removeFile(path.join(ROOT, "tests/unit/labels.test.ts"));
+removeFile(path.join(ROOT, "tests/unit/templates.test.ts"));
+try {
+  fs.rmdirSync(path.join(ROOT, "tests/unit"));
+} catch {}
+console.log("✓ Scaffold scripts and template tests removed");
 
 console.log(`
 ✅ Done! Your project "${projectName}" is ready.
