@@ -9,7 +9,7 @@
  * Usage: pnpm scaffold
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as readline from "node:readline/promises";
@@ -18,6 +18,18 @@ import { LABELS } from "./labels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
+
+// Refuse to run on an already-scaffolded repo. `.construct` is written during
+// scaffolding, so its presence means this has already run (or a previous run
+// failed partway). Re-running would clobber instance customizations.
+if (fs.existsSync(path.join(ROOT, ".construct"))) {
+  console.error(
+    "✋ This repository has already been scaffolded (.construct exists).\n" +
+      "   Scaffolding is a one-time, destructive operation — aborting.\n" +
+      "   If a previous run failed partway, reset with `git checkout . && git clean -fd` first."
+  );
+  process.exit(1);
+}
 
 // Interactive terminals get a readline interface; piped/non-interactive stdin
 // (e.g. `printf '...' | node scaffold.mjs` in CI) is read in full once and
@@ -59,11 +71,18 @@ function removeFile(filePath) {
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 }
 
+/**
+ * Convert a project name into a valid npm package name: lowercase, alphanumeric
+ * with single hyphens, no leading/trailing hyphens. Returns "" if nothing
+ * usable remains (caller falls back to a default).
+ * @param {string} name
+ * @returns {string}
+ */
 function slugify(name) {
   return name
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+    .replace(/[^a-z0-9]+/g, "-") // collapse runs of non-alphanumerics to one hyphen
+    .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
 }
 
 /**
@@ -93,6 +112,23 @@ function closePrompts() {
   rl?.close();
 }
 
+/**
+ * Report a failure during the (file-mutating) scaffold phase. True rollback
+ * isn't feasible once files have been written/deleted, so we surface a clear
+ * partial-state message and recovery command instead of a raw stack trace.
+ * @param {unknown} err
+ */
+function reportPartialFailure(err) {
+  closePrompts();
+  console.error("\n❌ Scaffolding failed partway through:");
+  console.error(`  ${err instanceof Error ? err.message : String(err)}`);
+  console.error(
+    "\nThe repository may be partially scaffolded. Reset and try again:\n" +
+      "  git checkout . && git clean -fd\n"
+  );
+  process.exit(1);
+}
+
 console.log("\n🔧 construct scaffold\n");
 console.log("This will initialize a new project from this construct instance.");
 console.log("Run this once. It cannot be undone.\n");
@@ -107,10 +143,18 @@ if (confirm !== "yes") {
 console.log("");
 
 const projectName = await prompt("Project name: ", "my-project");
-const projectSlug = slugify(projectName);
+// Fall back to a safe default if the name slugifies to nothing (e.g. all
+// punctuation or non-Latin characters) so we never write an invalid pkg name.
+const projectSlug = slugify(projectName) || "my-project";
 const projectDescription = await prompt("Short description: ", "");
 
-console.log("\nScaffolding...\n");
+console.log(`\nScaffolding "${projectName}" (package name: ${projectSlug})...\n`);
+
+// From here on we mutate files. Surface any failure as a clear partial-state
+// message rather than a raw stack trace. The mutation steps below are
+// synchronous, so an uncaught throw lands here.
+process.on("uncaughtException", reportPartialFailure);
+process.on("unhandledRejection", reportPartialFailure);
 
 // 1. Read construct version from package.json before we modify it
 const pkg = readJSON(path.join(ROOT, "package.json"));
@@ -120,7 +164,7 @@ const constructVersion = pkg.version;
 pkg.name = projectSlug;
 pkg.description = projectDescription;
 pkg.version = "0.1.0";
-pkg.scripts.scaffold = undefined;
+delete pkg.scripts.scaffold;
 writeJSON(path.join(ROOT, "package.json"), pkg);
 console.log("✓ package.json updated");
 
@@ -241,22 +285,41 @@ closePrompts();
 if (setupLabels === "yes") {
   console.log("\nCreating labels...\n");
   let labelErrors = 0;
+  let firstError = null;
   for (const label of LABELS) {
     try {
-      execSync(
-        `gh label create "${label.name}" --color "${label.color}" --description "${label.description}" --force`,
+      // Pass arguments as an argv array (no shell) so label fields containing
+      // quotes, backticks, $, ; etc. can never break or inject into a command.
+      execFileSync(
+        "gh",
+        [
+          "label",
+          "create",
+          label.name,
+          "--color",
+          label.color,
+          "--description",
+          label.description,
+          "--force",
+        ],
         { stdio: "pipe" }
       );
       console.log(`  ✓ ${label.name}`);
-    } catch {
-      console.log(`  ✗ ${label.name} (skipped — run manually if needed)`);
+    } catch (err) {
+      if (!firstError) firstError = err;
+      console.log(`  ✗ ${label.name} (skipped)`);
       labelErrors++;
     }
   }
   if (labelErrors > 0) {
-    console.log(
-      `\n  ${labelErrors} label(s) failed. Run: gh label create "<name>" --color "<hex>" --description "<desc>"`
-    );
+    // Surface the underlying gh error once so the cause (not installed, not
+    // authenticated, wrong repo) is visible instead of silently swallowed.
+    const detail =
+      firstError?.stderr?.toString().trim() ||
+      (firstError instanceof Error ? firstError.message : String(firstError));
+    console.log(`\n  ${labelErrors} label(s) failed. First error from gh:`);
+    console.log(`    ${detail}`);
+    console.log("  Fix it (e.g. `gh auth login`) and create labels with `gh label create`.");
   } else {
     console.log("\n✓ Labels created");
   }
