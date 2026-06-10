@@ -19,10 +19,29 @@ import { LABELS } from "./labels.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// Interactive terminals get a readline interface; piped/non-interactive stdin
+// (e.g. `printf '...' | node scaffold.mjs` in CI) is read in full once and
+// consumed line-by-line. Line-by-line readline prompts silently drop buffered
+// lines when stdin reaches EOF, so the two paths are kept separate.
+const isInteractive = Boolean(process.stdin.isTTY);
+const rl = isInteractive
+  ? readline.createInterface({ input: process.stdin, output: process.stdout })
+  : null;
+
+/** @type {string[] | null} Lines from piped stdin, read lazily on first prompt. */
+let pipedLines = null;
+let pipedIndex = 0;
+
+/**
+ * Read the entire stdin stream to a string. Used only for non-interactive
+ * (piped) input.
+ * @returns {Promise<string>}
+ */
+async function readAllStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf-8");
+}
 
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -47,9 +66,31 @@ function slugify(name) {
     .replace(/[^a-z0-9-]/g, "");
 }
 
+/**
+ * Prompt for one answer. Uses interactive readline when stdin is a TTY,
+ * otherwise consumes the next line of piped stdin. Works reliably for
+ * sequential prompts in both modes.
+ * @param {string} question
+ * @param {string} fallback Returned when the answer is empty.
+ * @returns {Promise<string>}
+ */
 async function prompt(question, fallback) {
-  const answer = await rl.question(question);
-  return answer.trim() || fallback;
+  if (rl) {
+    const answer = await rl.question(question);
+    return answer.trim() || fallback;
+  }
+  if (pipedLines === null) {
+    pipedLines = (await readAllStdin()).split(/\r?\n/);
+  }
+  const raw = (pipedLines[pipedIndex++] ?? "").trim();
+  // Echo the prompt + chosen answer so non-interactive runs are still readable.
+  process.stdout.write(`${question}${raw}\n`);
+  return raw || fallback;
+}
+
+/** Close the interactive readline interface, if one is open. */
+function closePrompts() {
+  rl?.close();
 }
 
 console.log("\n🔧 construct scaffold\n");
@@ -59,7 +100,7 @@ console.log("Run this once. It cannot be undone.\n");
 const confirm = await prompt("Continue? (yes/no): ", "no");
 if (confirm !== "yes") {
   console.log("Aborted.");
-  rl.close();
+  closePrompts();
   process.exit(0);
 }
 
@@ -68,8 +109,6 @@ console.log("");
 const projectName = await prompt("Project name: ", "my-project");
 const projectSlug = slugify(projectName);
 const projectDescription = await prompt("Short description: ", "");
-
-rl.close();
 
 console.log("\nScaffolding...\n");
 
@@ -181,14 +220,10 @@ for (const label of LABELS) {
   console.log(`  • ${label.name}`);
 }
 
-const rl2 = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-const setupLabels = await rl2.question("\nSet up GitHub labels now? (yes/no): ");
-rl2.close();
+const setupLabels = await prompt("\nSet up GitHub labels now? (yes/no): ", "no");
+closePrompts();
 
-if (setupLabels.trim() === "yes") {
+if (setupLabels === "yes") {
   console.log("\nCreating labels...\n");
   let labelErrors = 0;
   for (const label of LABELS) {
@@ -215,13 +250,20 @@ if (setupLabels.trim() === "yes") {
   console.log("  node scripts/labels.mjs  (or re-run and choose yes)\n");
 }
 
-// 10. Remove scaffold scripts
+// 10. Remove scaffold scripts and the template-infrastructure tests that
+// cover them (these test construct itself, not the scaffolded app; labels.test
+// also imports scripts/labels.mjs, which is removed above).
 removeFile(path.join(ROOT, "scripts/labels.mjs"));
 removeFile(path.join(ROOT, "scripts/scaffold.mjs"));
 try {
   fs.rmdirSync(path.join(ROOT, "scripts"));
 } catch {}
-console.log("✓ Scaffold scripts removed");
+removeFile(path.join(ROOT, "tests/unit/labels.test.ts"));
+removeFile(path.join(ROOT, "tests/unit/templates.test.ts"));
+try {
+  fs.rmdirSync(path.join(ROOT, "tests/unit"));
+} catch {}
+console.log("✓ Scaffold scripts and template tests removed");
 
 console.log(`
 ✅ Done! Your project "${projectName}" is ready.
