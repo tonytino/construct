@@ -1,6 +1,6 @@
 # Environment Variables
 
-All environment variables are validated at startup using Zod in `app/env.ts`.
+All environment variables are validated with Zod in `app/env.ts`. Validation runs lazily on the first call to `getEnv()` (memoized thereafter), not at import time — so importing modules that depend on env, such as `db/client.ts`, stays safe in tests and non-Node contexts. Invalid env throws a descriptive `Error` rather than exiting the process.
 
 ## Adding a New Variable
 
@@ -20,12 +20,15 @@ const envSchema = z.object({
 YOUR_NEW_VAR=
 ```
 
-3. Import `env` from `~/env` wherever you need it — never use `process.env` directly:
+3. Call `getEnv()` from `~/env` wherever you need it — never use `process.env` directly:
 
 ```ts
-import { env } from "~/env";
+import { getEnv } from "~/env";
+const env = getEnv();
 console.log(env.YOUR_NEW_VAR);
 ```
+
+`parseEnv(source)` is also exported for unit tests — it validates an arbitrary source and is pure (throws on invalid input, never exits).
 
 ## Rules
 

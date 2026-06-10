@@ -7,7 +7,7 @@ Stack: Drizzle ORM + Neon (serverless Postgres).
 | File                  | Purpose                                              |
 | --------------------- | ---------------------------------------------------- |
 | `db/schema.ts`        | Single source of truth for all table definitions     |
-| `db/client.ts`        | Drizzle + Neon client — import `db` from here        |
+| `db/client.ts`        | Drizzle + Neon client — call `getDb()` from here     |
 | `db/migrations/`      | Auto-generated migration files — never edit manually |
 | `drizzle.config.ts`   | Drizzle Kit config                                   |
 
@@ -35,8 +35,10 @@ export type NewPost = typeof posts.$inferInsert;
 ## Querying
 
 ```ts
-import { db } from "~/db/client";
+import { getDb } from "~/db/client";
 import { posts } from "~/db/schema";
+
+const db = getDb(); // lazily constructed + memoized; needs DATABASE_URL
 
 // Select
 const all = await db.select().from(posts);
