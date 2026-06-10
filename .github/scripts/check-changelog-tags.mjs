@@ -25,6 +25,7 @@ for (const line of lines) {
     inTarget = match[1] === version;
     continue;
   }
+  // Top-level bullets only — nested sub-bullets are exempt from tagging by design.
   if (inTarget && /^- /.test(line)) {
     bullets.push(line);
   }
