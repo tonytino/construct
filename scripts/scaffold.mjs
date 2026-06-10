@@ -164,7 +164,12 @@ const constructVersion = pkg.version;
 pkg.name = projectSlug;
 pkg.description = projectDescription;
 pkg.version = "0.1.0";
-delete pkg.scripts.scaffold;
+// Drop the scaffold script by rebuilding `scripts` without it — avoids both
+// `delete` (biome's noDelete rule) and relying on JSON.stringify omitting an
+// `undefined` value.
+pkg.scripts = Object.fromEntries(
+  Object.entries(pkg.scripts).filter(([name]) => name !== "scaffold")
+);
 writeJSON(path.join(ROOT, "package.json"), pkg);
 console.log("✓ package.json updated");
 
