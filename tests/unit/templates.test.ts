@@ -78,6 +78,6 @@ describe("ci.yml", () => {
   it("injects DATABASE_URL from secrets for E2E tests", () => {
     const content = readWorkflow("ci.yml");
     expect(content).toContain("DATABASE_URL");
-    expect(content).toContain("secrets.DATABASE_URL");
+    expect(content).toContain("secrets.CI_E2E_DATABASE_URL");
   });
 });

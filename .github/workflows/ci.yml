@@ -33,12 +33,23 @@ jobs:
       - name: Unit tests
         run: pnpm exec vitest run
 
+      # The `secrets` context is not allowed in step-level `if` conditions, so we
+      # detect the optional E2E secret here and gate later steps on this output.
+      - name: Check for E2E database secret
+        id: e2e
+        env:
+          E2E_DATABASE_URL: ${{ secrets.CI_E2E_DATABASE_URL }}
+        run: |
+          if [ -n "$E2E_DATABASE_URL" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install Playwright browsers
-        if: ${{ secrets.CI_E2E_DATABASE_URL != '' }}
+        if: steps.e2e.outputs.enabled == 'true'
         run: pnpm test:e2e:install
 
       - name: E2E tests
-        if: ${{ secrets.CI_E2E_DATABASE_URL != '' }}
+        if: steps.e2e.outputs.enabled == 'true'
         run: pnpm test:e2e
         env:
           DATABASE_URL: ${{ secrets.CI_E2E_DATABASE_URL }}
