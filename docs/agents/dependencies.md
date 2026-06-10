@@ -14,28 +14,55 @@ Default to `^` for new dependencies. Switch to `~` if you encounter or have reas
 
 ## TanStack Override Pattern
 
-TanStack Router, Start, and their internal sub-packages release in lockstep. If the lockfile resolves different sub-packages to different minors, things break silently — for example, v1.167 dropped the vinxi-based config API that this project relies on (see PR #9).
+TanStack Router, Start, and their internal sub-packages must stay on one
+compatible release. If the lockfile resolves different sub-packages to
+different minors, things break silently — for example, v1.167 dropped the
+vinxi-based config API this project relies on (see PR #9), and a newer
+`start-*-core` expecting `@tanstack/router-core` to export `./ssr/client` broke
+`vinxi build` against the pinned `1.114` core (see PR #30).
 
-The fix is the `pnpm.overrides` block in `package.json`, which pins **every** `@tanstack/*` router/start package to the same tilde range:
+The fix is the `pnpm.overrides` block in `package.json`. Two rules make it work:
+
+1. **Pin to exact versions, not ranges.** A tilde (`~1.114.3`) lets each entry
+   drift to a different `1.114.x` patch on a fresh resolve, which can reintroduce
+   skew. Exact versions freeze a known-good set.
+2. **List every internal package, not just the `@tanstack/react-*` ones.** This
+   includes `start-client-core`, `start-server-core`, `start-server-functions-*`,
+   `router-core`, `router-utils`, `history`, `virtual-file-routes`,
+   `directive-functions-plugin`, etc. Any omitted package floats to its latest
+   release and drags in newer, incompatible architecture. (This was the root
+   cause fixed in #30.)
 
 ```jsonc
 "pnpm": {
   "overrides": {
-    "@tanstack/react-router": "~1.114.3",
-    "@tanstack/react-start": "~1.114.3",
-    "@tanstack/react-start-client": "~1.114.3",
-    // ... all sub-packages at the same version
+    "@tanstack/react-router": "1.114.35",
+    "@tanstack/react-start": "1.114.34",
+    "@tanstack/start-client-core": "1.114.35",
+    "@tanstack/start-server-core": "1.114.35",
+    // ... every router/start internal package, pinned exactly
   }
 }
 ```
 
+Note the versions are **not all identical** — within a single release line the
+sub-packages publish different latest patches (e.g. `react-start` at `1.114.34`,
+`router-utils` at `1.114.29`). Pin each to the exact version the set resolves to,
+not to one shared number.
+
 **When updating TanStack versions:**
 
-1. Change the version in **both** the top-level `dependencies`/`devDependencies` **and** every entry in `pnpm.overrides`.
-2. Run `pnpm install` and verify the lockfile shows a single resolved version for all `@tanstack/*` packages.
+1. Update **both** the top-level `dependencies`/`devDependencies` **and** every
+   entry in `pnpm.overrides`, using the exact resolved version per package.
+2. Run `pnpm install` and confirm the `pnpm-lock.yaml` diff shows a single,
+   coherent set with no stray newer `@tanstack/*` minors.
 3. Run `pnpm preflight && pnpm build`.
 
 Never update just one TanStack package in isolation.
+
+> Future cleanup: once TanStack Start stabilizes its internal package versioning
+> (a single coordinated version), this whole block can collapse to a normal
+> dependency range and be removed.
 
 ## Testing a Dependency Bump
 
