@@ -223,7 +223,6 @@ const agentsPath = path.join(ROOT, "AGENTS.md");
 let agents = fs.readFileSync(agentsPath, "utf-8");
 agents = agents.replace(/^# AGENTS\.md$/m, `# ${projectName}`);
 agents = agents.replace(/the construct template/g, `the ${projectName} template`);
-agents = agents.replace(/Propagating construct updates/g, `Propagating ${projectName} updates`);
 writeFile(agentsPath, agents);
 console.log("✓ AGENTS.md updated");
 
@@ -285,7 +284,7 @@ console.log(`
 ✅ Done! Your project "${projectName}" is ready.
 
 Next steps:
-  1. cp .env.example .env.local  (and fill in DATABASE_URL — see docs/agents/environment.md)
+  1. cp .env.example .env  (and fill in DATABASE_URL — see docs/agents/environment.md)
   2. pnpm install
   3. pnpm dev
 `);

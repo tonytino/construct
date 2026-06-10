@@ -17,7 +17,7 @@ A single-app template optimized for agentic engineering. Clone it, scaffold it, 
 ## Starting a New Project
 
 ```bash
-git clone https://github.com/you/construct my-project
+git clone https://github.com/tonytino/construct my-project
 cd my-project
 pnpm install
 pnpm scaffold
