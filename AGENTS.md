@@ -13,16 +13,23 @@ Source of truth for all agents in this repo. Read this file fully before making 
 
 ### Sub-Doc Index
 
-| Task involves...             | Read this first                  |
-| ---------------------------- | -------------------------------- |
-| Finding and claiming work    | `docs/agents/tasks.md`           |
-| Routes, pages, navigation    | `docs/agents/routing.md`         |
-| API endpoints, server logic  | `docs/agents/api.md`             |
-| Database, schema, migrations | `docs/agents/database.md`        |
-| Tests (unit, component, E2E) | `docs/agents/testing.md`         |
-| Styling, Tailwind, CSS       | `docs/agents/styling.md`         |
-| Environment variables        | `docs/agents/environment.md`     |
-| Propagating construct updates to instances | `docs/agents/propagation.md` |
+| Task involves...                              | Read this first               |
+| --------------------------------------------- | ----------------------------- |
+| Finding and claiming work                     | `docs/agents/tasks.md`        |
+| Routes, pages, navigation                     | `docs/agents/routing.md`      |
+| API endpoints, server logic                   | `docs/agents/api.md`          |
+| Database, schema, migrations                  | `docs/agents/database.md`     |
+| Tests (unit, component, E2E)                  | `docs/agents/testing.md`      |
+| Styling, Tailwind, CSS                        | `docs/agents/styling.md`      |
+| Environment variables                         | `docs/agents/environment.md`  |
+| Dependencies, versioning, overrides           | `docs/agents/dependencies.md` |
+| Tooling: lint, format, preflight, hooks       | `docs/agents/tooling.md`      |
+| Releasing a new version of the template       | `docs/agents/releases.md`     |
+| Propagating template updates to instances     | `docs/agents/propagation.md`  |
+| Upgrading a spawned project to a new version  | `docs/migrations/`            |
+| Architecture decisions, tradeoffs             | `docs/decisions/`             |
+
+When you face a fork-in-the-road decision — choosing between technologies, patterns, or approaches — check `docs/decisions/` first. The ADRs there explain why specific choices were made and what constraints apply. This prevents re-litigating settled decisions.
 
 ---
 
@@ -72,7 +79,7 @@ These apply everywhere, always, with no exceptions.
 - **No new dependencies** without checking if the existing stack already covers the need.
 - **No skipping tests** for code you add.
 - **pnpm only.** Never use npm or yarn.
-- **Run `pnpm check` before every commit.**
+- **Run `pnpm preflight` before declaring work complete.** This single command runs lint, typecheck, and tests. See `docs/agents/tooling.md` for when to use `check` vs `preflight` vs the pre-commit hook.
 
 ---
 
@@ -97,18 +104,29 @@ After work is done, open a PR with `Closes #<NUMBER>` and relabel to `status:nee
 
 ---
 
+## Template Version Tracking
+
+Projects scaffolded from construct contain a `.construct` JSON file at the repo root. Its `constructVersion` field records which version of the template was used. Agents working in a scaffolded project should check this file to understand what template features are available. See `docs/agents/propagation.md` for the full propagation workflow.
+
+---
+
 ## Commands
 
 ```bash
 pnpm dev              # Start dev server
 pnpm build            # Production build
 pnpm start            # Start production server
-pnpm check            # Biome lint + format (auto-fix) — run before committing
-pnpm typecheck        # TypeScript check
+
+pnpm check            # Biome lint + format (auto-fix) while working
+pnpm preflight        # Read-only validation: lint + typecheck + tests. Run before declaring work complete.
+pnpm typecheck        # TypeScript check (subset of preflight)
 pnpm test             # Vitest watch mode
 pnpm test:e2e         # Playwright E2E (headless)
 pnpm test:e2e:ui      # Playwright interactive UI
+
 pnpm db:generate      # Generate migrations after schema changes
 pnpm db:migrate       # Apply pending migrations
 pnpm db:studio        # Open Drizzle Studio
 ```
+
+Pre-commit: Lefthook runs `biome check --staged` automatically on every commit. No manual step needed. See `docs/agents/tooling.md` for details.

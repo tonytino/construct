@@ -66,6 +66,17 @@ git worktree add -b issue-<NUMBER>-<short-slug> .claude/worktrees/issue-<NUMBER>
 3. Work in the branch created above.
 4. Commit early and often. Commit message format: `type: brief description` (e.g., `feat: add avatar upload endpoint`).
 5. Run `pnpm check` before every commit.
+6. Run `pnpm preflight` before declaring work complete — it runs lint, typecheck, and tests in one command.
+
+---
+
+## Pre-commit Hooks
+
+This project uses [Lefthook](https://github.com/evilmartians/lefthook) to run pre-commit hooks automatically. After running `pnpm install`, Lefthook installs its Git hooks via the `prepare` lifecycle script. No manual setup is required.
+
+When you commit, Lefthook runs `biome check --staged` on all staged files matching common source extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.json`, `.css`). This catches lint and formatting issues before they enter the repository. If the check fails, the commit is blocked until you fix the reported problems.
+
+You can still run `pnpm check` manually for a full project-wide lint and format pass, but the pre-commit hook ensures that every commit is at least locally clean.
 
 ---
 
