@@ -11,6 +11,8 @@ Stack: Drizzle ORM + Neon (serverless Postgres).
 | `db/migrations/`      | Auto-generated migration files — never edit manually |
 | `drizzle.config.ts`   | Drizzle Kit config                                   |
 
+`db/migrations/` does not exist until you run `pnpm db:generate` for the first time — Drizzle Kit creates it from `db/schema.ts`. Don't hand-create or hand-edit it.
+
 ## Adding or Changing a Table
 
 1. Edit `db/schema.ts`

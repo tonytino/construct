@@ -73,7 +73,7 @@ For each instance in the target directory:
 | Conventions | `AGENTS.md`, `docs/agents/*` | Yes — merge with instance customizations |
 | Tooling config | `biome.json`, `tsconfig.json`, `vitest.config.ts`, `playwright.config.ts`, `lefthook.yml`, `tsr.config.json`, `.gitignore` | Yes — additive only, preserve instance customizations |
 | Scripts and deps | `package.json` scripts, dev deps, `pnpm.overrides`, `packageManager` | Yes |
-| Example code | `app/utils/format.ts`, `app/components/Greeting.tsx`, `app/routes/__root.tsx`, `app/routes/index.tsx` | Yes — skip if instance has customized the file |
+| Example code | `app/utils/format.ts`, `app/components/Greeting.tsx`, `app/routes/__root.tsx`, `app/routes/index.tsx`, and co-located tests (`app/utils/format.test.ts`, `app/components/Greeting.test.tsx`, `app/env.test.ts`) | Yes — skip if instance has customized the file |
 | CI workflows | `.github/workflows/ci.yml`, `.github/workflows/release-check.yml`, `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*` | Yes |
 | Instance-owned | `README.md`, `CHANGELOG.md`, `db/schema.ts`, most of `app/routes/`, `.env*`, `.construct` | **No** — never overwrite |
 | Template-only | `TEMPLATE.md`, `docs/decisions/`, `docs/migrations/`, `scripts/scaffold.mjs`, `scripts/labels.mjs`, `.github/workflows/validate-template.yml` | **No** — these describe or validate construct itself |
