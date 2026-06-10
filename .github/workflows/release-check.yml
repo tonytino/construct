@@ -7,13 +7,21 @@ name: Release Check
 on:
   pull_request:
 
+# Least privilege: only reads the repo (diffs versions, checks files).
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-check:
     name: Version bump requires CHANGELOG + migration guide
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
 
