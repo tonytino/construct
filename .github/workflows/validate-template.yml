@@ -62,7 +62,9 @@ jobs:
           fi
           cat .construct
           EXPECTED=$(node -p "require('${{ github.workspace }}/package.json').version")
-          ACTUAL=$(node -p "require('./.construct').constructVersion")
+          # `.construct` has no .json extension, so require() would treat it as
+          # CommonJS and choke on the JSON — read and parse it explicitly.
+          ACTUAL=$(node -p "JSON.parse(require('node:fs').readFileSync('./.construct','utf8')).constructVersion")
           if [ "$EXPECTED" != "$ACTUAL" ]; then
             echo "constructVersion mismatch: expected $EXPECTED, got $ACTUAL"
             exit 1
