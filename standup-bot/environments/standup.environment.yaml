@@ -1,0 +1,18 @@
+# Environment definition for the Standup Bot (reference copy).
+#
+# The canonical provisioning path is `pnpm setup` (scripts/setup.ts).
+# ant CLI alternative:
+#   ant beta:environments create < environments/standup.environment.yaml --transform id -r
+#
+# Networking is deny-by-default with only Slack allowed. Note the vault
+# credential for SLACK_BOT_TOKEN carries its own allowed_hosts list — BOTH
+# layers must include slack.com or the token-substituted request fails.
+
+name: standup-bot
+description: Locked-down cloud sandbox for the Slack standup bot (egress to slack.com only)
+config:
+  type: cloud
+  networking:
+    type: limited
+    allowed_hosts:
+      - slack.com

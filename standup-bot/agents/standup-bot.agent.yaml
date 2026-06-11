@@ -1,0 +1,21 @@
+# Agent definition for the Standup Bot (reference copy).
+#
+# The canonical provisioning path is `pnpm setup` (scripts/setup.ts), which loads
+# prompts/system.md, interpolates the {{...}} placeholders from your .env, and
+# creates/updates this agent via the SDK.
+#
+# If you prefer the `ant` CLI instead, replace the placeholders in
+# prompts/system.md by hand and run:
+#   ant beta:agents create < agents/standup-bot.agent.yaml --transform id -r
+# (the "@./prompts/system.md" reference below is expanded by the ant CLI).
+
+name: Standup Bot
+model: claude-opus-4-8
+description: >-
+  Posts a daily standup prompt to Slack, tracks thread responses, nudges
+  non-responders, and DMs the standup owner about blocking issues.
+system: "@./prompts/system.md"
+tools:
+  - type: agent_toolset_20260401
+    default_config:
+      enabled: true

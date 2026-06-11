@@ -1,0 +1,22 @@
+{
+  "name": "slack-standup-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Slack standup reminder bot orchestrated by Claude Managed Agents (scheduled deployments + memory store + vault credentials)",
+  "type": "module",
+  "scripts": {
+    "setup": "tsx scripts/setup.ts",
+    "run-now": "tsx scripts/run-now.ts",
+    "status": "tsx scripts/status.ts",
+    "teardown": "tsx scripts/teardown.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
