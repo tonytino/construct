@@ -13,6 +13,36 @@ This repo uses two complementary backend patterns. Choosing correctly matters.
 | Does it need to be RESTful / independently testable via curl?    | Yes    | Hono route           |
 | Not sure yet?                                                    | —      | Start with Hono route (easier to consume later) |
 
+Server functions and Hono routes are *how* data is produced. **TanStack Query**
+is *how the client caches, shares, and refetches it.* They compose:
+
+- **Plain server function in a loader** (e.g. `getWelcome`) — one-shot route data
+  you don't need to cache, dedupe, or refetch. Simplest; no Query involved.
+- **TanStack Query** — data you want cached across components/navigations,
+  refetched on demand, or kept fresh (`staleTime`, invalidation, mutations).
+  The `queryFn` can be a server function, so you keep the no-fetch ergonomics.
+
+Query is wired SSR-aware (see `app/router.tsx` — `routerWithQueryClient` + a
+`QueryClient` in router context). Prefetch in a loader so data is dehydrated into
+the HTML and hydrated on the client with no loading flash:
+
+```ts
+const itemsQuery = queryOptions({ queryKey: ["items"], queryFn: () => getItems() });
+
+export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(itemsQuery); // server prefetch
+  },
+  component: () => {
+    const { data } = useSuspenseQuery(itemsQuery); // reads hydrated cache
+    // ...
+  },
+});
+```
+
+`app/routes/index.tsx` is the live example (it uses both `getWelcome` and a
+prefetched `itemsQuery` side by side).
+
 ## Layer 1 — Server Functions
 
 For data tightly coupled to a single route or component.  Server functions run
