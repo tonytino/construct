@@ -1,11 +1,24 @@
-import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import {
+  HeadContent,
+  Link,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 // Import the stylesheet as a bundled URL so the bundler emits a hashed asset
 // and rewrites the href. Referencing the source path ("/app/styles/app.css")
 // works in dev but 404s after `vinxi build`.
 import appCss from "~/styles/app.css?url";
 
-export const Route = createRootRoute({
+// The router injects the QueryClient into context (see app/router.tsx), so
+// loaders can prefetch queries via `context.queryClient`.
+export interface RouterContext {
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
