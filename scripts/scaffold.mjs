@@ -169,6 +169,12 @@ pkg.version = "0.1.0";
 pkg.scripts = Object.fromEntries(
   Object.entries(pkg.scripts).filter(([name]) => name !== "scaffold")
 );
+// The example Hono route (removed in step 7) is the only consumer of
+// @hono/zod-validator, so drop it too — otherwise the unused-dependency check
+// (knip) fails in the fresh instance. Re-add it when you build a validated route.
+pkg.dependencies = Object.fromEntries(
+  Object.entries(pkg.dependencies).filter(([name]) => name !== "@hono/zod-validator")
+);
 writeJSON(path.join(ROOT, "package.json"), pkg);
 console.log("✓ package.json updated");
 

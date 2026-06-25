@@ -1,0 +1,1 @@
+- `[propagate]` Removed `@testing-library/user-event`, which the new unused-dependency check flagged as declared but imported nowhere.
