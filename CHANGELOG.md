@@ -17,6 +17,10 @@ Each entry is tagged to guide agents propagating changes to construct instances:
 
 ## [Unreleased]
 
+### Changed
+
+- `[propagate]` Completed the `pnpm.overrides` set and switched it to exact pins: all **25** `@tanstack/*` router/start internal packages are now pinned to their exact resolved versions (`1.114.29`–`1.114.35`) instead of the original `~1.114.3` range, matching the policy in `docs/agents/dependencies.md`. (The `[0.2.0]` entry's "17 packages / `~1.114.3`" records what that release shipped; this entry records the later completion so the CHANGELOG no longer contradicts `package.json`.)
+
 ### Fixed
 
 - `[template-only]` Scaffold's label-setup recovery path now works. `scripts/labels.mjs` is runnable directly (`node scripts/labels.mjs`) via an `import.meta.url` main guard and is no longer deleted during scaffold, so the printed "set up labels later" instruction actually creates the labels. Scaffold reuses the same `createLabels()` helper.
