@@ -47,19 +47,18 @@ This project uses [Neon](https://neon.tech) — a serverless Postgres provider w
 
 1. Go to [neon.tech](https://neon.tech) and sign in (GitHub login works).
 2. Click **New Project** → choose a region close to you → **Create Project**.
-3. On the project dashboard, click **Connection Details**.
-4. Select the **Pooled connection** tab and copy the connection string.
-5. Create `.env` at the project root and paste it in:
+3. On the project dashboard, click **Connection Details** and copy the connection string. Either the **Pooled** or **Direct** endpoint works — this template uses Neon's HTTP driver (`drizzle-orm/neon-http`), so the `-pooler` distinction (which matters for the WebSocket `Pool` driver) doesn't apply here.
+4. Create `.env` at the project root and paste it in:
 
 ```bash
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 ```
 
-6. Run `pnpm db:migrate` to apply the initial schema.
+5. Run `pnpm db:migrate` to apply the initial schema.
 
 ### CI (GitHub Actions)
 
 1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**.
 2. Click **New repository secret**.
-3. Name: `CI_E2E_DATABASE_URL`, Value: the same pooled connection string from above.
+3. Name: `CI_E2E_DATABASE_URL`, Value: the same connection string from above.
 4. The CI workflow at `.github/workflows/ci.yml` reads `secrets.CI_E2E_DATABASE_URL` and injects it as `DATABASE_URL` for the E2E job. E2E steps are skipped when the secret is absent.

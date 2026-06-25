@@ -193,10 +193,11 @@ ${projectDescription}
 
 \`\`\`bash
 pnpm install
-cp .env.example .env
-pnpm test:e2e:install
+cp .env.example .env   # then fill in DATABASE_URL — see docs/agents/environment.md
 pnpm dev
 \`\`\`
+
+Running E2E tests? Install browsers first with \`pnpm test:e2e:install\`.
 
 ## For Agents
 
@@ -336,7 +337,7 @@ console.log(`
 ✅ Done! Your project "${projectName}" is ready.
 
 Next steps:
-  1. cp .env.example .env  (and fill in DATABASE_URL — see docs/agents/environment.md)
-  2. pnpm install
+  1. pnpm install
+  2. cp .env.example .env  (then fill in DATABASE_URL — see docs/agents/environment.md)
   3. pnpm dev
 `);
