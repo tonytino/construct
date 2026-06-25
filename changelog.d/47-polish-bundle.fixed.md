@@ -1,0 +1,3 @@
+- `[propagate]` Defined the `--color-muted-foreground` theme token in `app/styles/app.css` so the `text-muted-foreground` utility used by the starter routes actually renders (Tailwind v4 emits nothing for an undefined color utility).
+- `[propagate]` Aligned the scaffold-generated README with the scaffold's "Next steps" output — one command order, and the `DATABASE_URL` step is now in both.
+- `[propagate]` Clarified Neon connection-string guidance in `.env.example` and `docs/agents/environment.md`: with the `neon-http` driver the pooled vs. direct endpoint doesn't matter (the `-pooler` endpoint is for the WebSocket `Pool` driver).

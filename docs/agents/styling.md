@@ -22,6 +22,11 @@ This is the only global stylesheet. Keep it minimal:
 }
 ```
 
+The starter routes use the `text-muted-foreground` utility for secondary text;
+its backing `--color-muted-foreground` token is defined in `app/styles/app.css`.
+Tailwind v4 emits nothing for an undefined color utility, so the token must
+exist for the class to render.
+
 ## Rules
 
 - Use Tailwind utility classes exclusively in JSX.
