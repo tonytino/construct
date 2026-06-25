@@ -4,9 +4,10 @@ Pending changelog entries live here as individual files instead of a
 hand-edited `## [Unreleased]` block in `CHANGELOG.md`. Because each PR adds its
 own file, PRs never collide on the changelog.
 
-CI **requires every PR to add a fragment here.** If a change genuinely needs no
-changelog entry (a typo fix, a CI tweak, the release PR itself), apply the
-`skip-changelog` label to the PR.
+CI **requires every PR to add a fragment here.** Exceptions: PRs from a
+`release/*` branch (a release assembles the fragments — see
+`docs/agents/releases.md`) and any PR carrying the `skip-changelog` label (typo
+fixes, CI tweaks).
 
 ## Adding an entry
 

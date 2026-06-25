@@ -113,11 +113,12 @@ jobs:
 
   changelog-fragment:
     name: Changelog fragment present
-    # PRs must add a changelog fragment (see changelog.d/). Skippable via the
-    # `skip-changelog` label for changes that genuinely need no entry (typo
-    # fixes, CI tweaks, the release PR itself).
+    # PRs must add a changelog fragment (see changelog.d/). Exempt: `release/*`
+    # branches (a release PR assembles + consumes fragments, it doesn't add one)
+    # and any PR carrying the `skip-changelog` label (typo fixes, CI tweaks).
     if: >-
       github.event_name == 'pull_request' &&
+      !startsWith(github.head_ref, 'release/') &&
       !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
     runs-on: ubuntu-latest
 
