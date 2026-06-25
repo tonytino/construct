@@ -36,6 +36,9 @@ jobs:
       - name: Lint & format check
         run: pnpm exec biome check .
 
+      - name: Validate changelog fragments
+        run: pnpm changelog:check
+
       - name: Type check
         run: pnpm typecheck
 
