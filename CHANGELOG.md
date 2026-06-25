@@ -17,6 +17,10 @@ Each entry is tagged to guide agents propagating changes to construct instances:
 
 ## [Unreleased]
 
+### Added
+
+- `[propagate]` Pinned the Node version: `engines.node` (`>=22`) in `package.json` and a root `.nvmrc`. CI now reads the pin via `actions/setup-node` `node-version-file` (in `ci.yml` and `validate-template.yml`) so the declared version and CI can't drift.
+
 ---
 
 ## [0.2.0] - 2026-04-21
