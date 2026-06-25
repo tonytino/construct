@@ -9,12 +9,11 @@
  * Usage: pnpm scaffold
  */
 
-import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as readline from "node:readline/promises";
 import { fileURLToPath } from "node:url";
-import { LABELS } from "./labels.mjs";
+import { LABELS, createLabels } from "./labels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -289,64 +288,35 @@ closePrompts();
 
 if (setupLabels === "yes") {
   console.log("\nCreating labels...\n");
-  let labelErrors = 0;
-  let firstError = null;
-  for (const label of LABELS) {
-    try {
-      // Pass arguments as an argv array (no shell) so label fields containing
-      // quotes, backticks, $, ; etc. can never break or inject into a command.
-      execFileSync(
-        "gh",
-        [
-          "label",
-          "create",
-          label.name,
-          "--color",
-          label.color,
-          "--description",
-          label.description,
-          "--force",
-        ],
-        { stdio: "pipe" }
-      );
-      console.log(`  ✓ ${label.name}`);
-    } catch (err) {
-      if (!firstError) firstError = err;
-      console.log(`  ✗ ${label.name} (skipped)`);
-      labelErrors++;
-    }
-  }
-  if (labelErrors > 0) {
+  const { failed, firstError } = createLabels();
+  if (failed > 0) {
     // Surface the underlying gh error once so the cause (not installed, not
     // authenticated, wrong repo) is visible instead of silently swallowed.
     const detail =
       firstError?.stderr?.toString().trim() ||
       (firstError instanceof Error ? firstError.message : String(firstError));
-    console.log(`\n  ${labelErrors} label(s) failed. First error from gh:`);
+    console.log(`\n  ${failed} label(s) failed. First error from gh:`);
     console.log(`    ${detail}`);
-    console.log("  Fix it (e.g. `gh auth login`) and create labels with `gh label create`.");
+    console.log("  Fix it (e.g. `gh auth login`) and re-run `node scripts/labels.mjs`.");
   } else {
     console.log("\n✓ Labels created");
   }
 } else {
   console.log("\nSkipped. To set up labels later, run:");
-  console.log("  node scripts/labels.mjs  (or re-run and choose yes)\n");
+  console.log("  node scripts/labels.mjs\n");
 }
 
-// 10. Remove scaffold scripts and the template-infrastructure tests that
-// cover them (these test construct itself, not the scaffolded app; labels.test
-// also imports scripts/labels.mjs, which is removed above).
-removeFile(path.join(ROOT, "scripts/labels.mjs"));
+// 10. Remove the scaffold script and the template-infrastructure tests that
+// cover construct itself (not the scaffolded app). Keep scripts/labels.mjs so
+// the "run node scripts/labels.mjs" recovery path above keeps working; drop
+// its test alongside the other construct-only tests.
 removeFile(path.join(ROOT, "scripts/scaffold.mjs"));
-try {
-  fs.rmdirSync(path.join(ROOT, "scripts"));
-} catch {}
 removeFile(path.join(ROOT, "tests/unit/labels.test.ts"));
 removeFile(path.join(ROOT, "tests/unit/templates.test.ts"));
 try {
   fs.rmdirSync(path.join(ROOT, "tests/unit"));
 } catch {}
-console.log("✓ Scaffold scripts and template tests removed");
+console.log("✓ Scaffold script and template tests removed (kept scripts/labels.mjs)");
 
 console.log(`
 ✅ Done! Your project "${projectName}" is ready.

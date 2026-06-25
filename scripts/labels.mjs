@@ -9,6 +9,9 @@
  * @typedef {{ name: string; color: string; description: string }} Label
  */
 
+import { execFileSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
+
 /** @type {Label[]} */
 export const LABELS = [
   // ── Status ──────────────────────────────────────────────────────────────────
@@ -79,3 +82,64 @@ export const LABELS = [
     description: "Human must approve before the agent begins work",
   },
 ];
+
+/**
+ * Create (or update) every label in {@link LABELS} on the current GitHub repo
+ * via the `gh` CLI. Requires `gh` installed and authenticated against the repo.
+ * Shared by the scaffold script and the direct-run entrypoint below.
+ *
+ * @returns {{ created: number, failed: number, firstError: unknown }}
+ */
+export function createLabels() {
+  let created = 0;
+  let failed = 0;
+  let firstError = null;
+  for (const label of LABELS) {
+    try {
+      // Pass arguments as an argv array (no shell) so label fields containing
+      // quotes, backticks, $, ; etc. can never break or inject into a command.
+      execFileSync(
+        "gh",
+        [
+          "label",
+          "create",
+          label.name,
+          "--color",
+          label.color,
+          "--description",
+          label.description,
+          "--force",
+        ],
+        { stdio: "pipe" }
+      );
+      console.log(`  ✓ ${label.name}`);
+      created++;
+    } catch (err) {
+      if (!firstError) firstError = err;
+      console.log(`  ✗ ${label.name} (skipped)`);
+      failed++;
+    }
+  }
+  return { created, failed, firstError };
+}
+
+// Runnable directly: `node scripts/labels.mjs` (re)creates the labels later,
+// e.g. when label setup was skipped or failed during scaffold. The guard keeps
+// this from firing when the module is imported (by scaffold.mjs or the tests).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  console.log("Creating GitHub labels (requires the gh CLI, authenticated)...\n");
+  const { created, failed, firstError } = createLabels();
+  if (failed > 0) {
+    // Surface the underlying gh error once so the cause (not installed, not
+    // authenticated, wrong repo) is visible instead of silently swallowed.
+    const detail =
+      firstError?.stderr?.toString().trim() ||
+      (firstError instanceof Error ? firstError.message : String(firstError));
+    console.log(`\n${failed} label(s) failed. First error from gh:`);
+    console.log(`  ${detail}`);
+    console.log("Fix it (e.g. `gh auth login`) and re-run `node scripts/labels.mjs`.");
+    process.exitCode = 1;
+  } else {
+    console.log(`\n✓ Created ${created} labels`);
+  }
+}
