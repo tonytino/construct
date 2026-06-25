@@ -26,6 +26,41 @@ into a versioned section here. Do not hand-edit this block.
 
 ---
 
+## [0.3.0] - 2026-06-25
+
+### Added
+
+- `[propagate]` Wired up TanStack Query (SSR-aware): `app/router.tsx` creates a `QueryClient` and wraps the router with `routerWithQueryClient`; `app/routes/__root.tsx` uses `createRootRouteWithContext` so loaders get a typed `context.queryClient`; `app/routes/index.tsx` shows a prefetched `useSuspenseQuery` example. Added `@tanstack/react-router-with-query`.
+- `[template-only]` Added a production-build smoke CI job (`pnpm build && pnpm start`) that asserts the homepage returns 200 and its bundled stylesheet resolves — catching prod-only breakage the dev-server E2E misses.
+- `[propagate]` Added a `GET /api/health` liveness route (kept in scaffolded projects) and made the request-validation example route optional: scaffold no longer strips it, and `node scripts/remove-example.mjs` deletes it plus drops `@hono/zod-validator` for projects that don't want it.
+- `[propagate]` Added an interactive `Counter` example component with a `@testing-library/user-event` test, demonstrating the full Testing Library + Vitest flow (render → real click → assert). Switched the jest-dom setup import to the Vitest-specific entry (`@testing-library/jest-dom/vitest`).
+- `[propagate]` Added an unused-dependency CI check (`pnpm knip`, configured in `knip.json`) that fails when a declared dependency is imported nowhere — the guardrail that would have caught the previously-unused `@tanstack/react-query`. Documented in `docs/agents/dependencies.md`.
+- `[propagate]` Pinned the Node version: `engines.node` (`>=22`) in `package.json` and a root `.nvmrc`. CI now reads the pin via `actions/setup-node` `node-version-file` (in `ci.yml` and `validate-template.yml`) so the declared version and CI can't drift.
+- `[propagate]` Changelog entries are now fragment files under `changelog.d/` (one per PR) instead of a hand-edited `## [Unreleased]` block, eliminating changelog merge conflicts. Adds `scripts/changelog.mjs` (`preview` / `check` / `release <version>`) and a CI check that requires every PR to add a fragment (skippable with the `skip-changelog` label). Scaffolded instances inherit the system.
+
+### Changed
+
+- `[template-only]` Hardened the CI workflows: least-privilege `permissions`, concurrency cancellation of superseded runs, and SHA-pinned actions.
+- `[template-only]` Hardened the E2E assertion and added Vitest coverage configuration.
+- `[propagate]` Completed the `pnpm.overrides` set and switched it to exact pins: all **25** `@tanstack/*` router/start internal packages are now pinned to their exact resolved versions (`1.114.29`–`1.114.35`) instead of the original `~1.114.3` range, matching the policy in `docs/agents/dependencies.md`. (The `[0.2.0]` entry's "17 packages / `~1.114.3`" records what that release shipped; this entry records the later completion so the CHANGELOG no longer contradicts `package.json`.)
+
+### Fixed
+
+- `[propagate]` Bundle the stylesheet via a `?url` import in `app/routes/__root.tsx` so the production build is styled — referencing the source path 404s after `vinxi build`.
+- `[propagate]` Made `env`/`db` lazy and pure, so importing them (e.g. transitively in unit tests) no longer requires a live `DATABASE_URL`.
+- `[propagate]` The `/api` catch-all now forwards `OPTIONS`/`HEAD` to Hono, and the Hono app centralizes JSON 404 and 500 error handling without leaking internals.
+- `[propagate]` Type-check the `db/` directory (added to `tsconfig` `include`) and made the documented `~/db/*` import alias resolve in tsc, Vite, and Vitest.
+- `[propagate]` Fixed a hydration mismatch, dropdown defaults, and CRLF handling in the starter UI.
+- `[propagate]` Reconciled the setup instructions across the README and docs with the actual scaffold and commands.
+- `[template-only]` Hardened the scaffold script: argv-safe `execFileSync`, a re-run guard, and project-name slug validation.
+- `[template-only]` Restored a green CI baseline (workflow gating, frozen lockfile, the pinned `@tanstack` build, and scaffold stdin handling).
+- `[template-only]` Scaffold's label-setup recovery path now works. `scripts/labels.mjs` is runnable directly (`node scripts/labels.mjs`) via an `import.meta.url` main guard and is no longer deleted during scaffold, so the printed "set up labels later" instruction actually creates the labels. Scaffold reuses the same `createLabels()` helper.
+- `[propagate]` Defined the `--color-muted-foreground` theme token in `app/styles/app.css` so the `text-muted-foreground` utility used by the starter routes actually renders (Tailwind v4 emits nothing for an undefined color utility).
+- `[propagate]` Aligned the scaffold-generated README with the scaffold's "Next steps" output — one command order, and the `DATABASE_URL` step is now in both.
+- `[propagate]` Clarified Neon connection-string guidance in `.env.example` and `docs/agents/environment.md`: with the `neon-http` driver the pooled vs. direct endpoint doesn't matter (the `-pooler` endpoint is for the WebSocket `Pool` driver).
+
+---
+
 ## [0.2.0] - 2026-04-21
 
 ### Added
