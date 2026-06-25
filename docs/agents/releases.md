@@ -20,7 +20,8 @@ Day to day you do **not** edit `CHANGELOG.md`'s `[Unreleased]` block. Each PR
 instead adds a fragment file under `changelog.d/` named `<slug>.<category>.md`
 (category = `added` / `changed` / `fixed` / …) with bullets that each carry a
 propagation tag. Because every PR adds its own file, PRs never collide on the
-changelog. `pnpm changelog:check` validates fragments in CI and
+changelog. CI requires every PR to add a fragment (skippable with the
+`skip-changelog` label) and `pnpm changelog:check` validates their format;
 `pnpm changelog:preview` renders the pending section. See
 `changelog.d/README.md` for the format. The release step (below) folds the
 fragments into a real `## [X.Y.Z]` section.
